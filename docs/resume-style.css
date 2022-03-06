@@ -18,7 +18,7 @@ body {
   background: #ffffff;
   cursor: default;
   font-family: "Montserrat", sans-serif;
-  font-size: 15px;
+  font-size: 13px;
 }
 
 a {
@@ -214,6 +214,54 @@ h3 {
   display: block;
 }
 
+
+
+
+
+.resume .base .skills .box {
+  text-align: left;
+  vertical-align: middle;
+}
+
+.resume .base .skills .box a {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+
+.resume .base .skills .box a:hover i {
+  background: #fdd835;
+  border-radius: 5px;
+  -webkit-transform: rotate(45deg) scale(0.8);
+          transform: rotate(45deg) scale(0.8);
+}
+
+.resume .base .skills .box a:hover i::before {
+  -webkit-transform: rotate(-45deg) scale(1.5);
+          transform: rotate(-45deg) scale(1.5);
+}
+
+
+.resume .base .skills .box i {
+  display: inline-block;
+  font-size: 30px;
+  background: #ffb300;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  line-height: 60px;
+  color: #283593;
+  margin: 0 10px 10px 10px;
+  transition-duration: 0.3s;
+}
+
+.resume .base .skills .box i::before {
+  transition-duration: 0.3s;
+}
+
+.resume .base .skills .box i.fa::before {
+  display: block;
+}
+
 .resume .func {
   width: 100%;
   padding: 30px;
@@ -373,7 +421,7 @@ h3 {
 }
 
 .resume .func .skills-prog ul li {
-  margin-bottom: 8px;
+  margin-bottom: 13px;
   display: flex;
   align-items: center;
   transition-duration: 0.3s;
@@ -516,6 +564,3 @@ h3 {
 .resume .func .interests-items div span {
   display: block;
 }
-@page {
-  size: 9in 8in;
-  }
