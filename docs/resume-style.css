@@ -562,3 +562,13 @@ h3 {
 .resume .func .interests-items div span {
   display: block;
 }
+
+@media print {
+  .print-button {
+      display: none;
+  }
+  
+  .content div {
+      break-after: always;
+  }
+}
