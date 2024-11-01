@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Storage Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background-color: #0265B4;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        .summary, .chart-container, .schema-container, .metrics-table {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        canvas {
+            max-width: 100%;
+        }
+        .schema {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .schema-step {
+            background-color: #e0e0e0;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            width: 80%;
+            text-align: center;
+        }
+        .arrow {
+            width: 0; 
+            height: 0; 
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #333;
+            margin: 5px 0;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        ul li {
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Energy Storage Analysis</h1>
+    </header>
+    <div class="container">
+        <div class="summary">
+            <h2>Project Overview</h2>
+            <p>This project involves analyzing energy storage data to classify fuel types in residential storages using logistic regression. The analysis process included several key steps:</p>
+            <ul>
+                <li><strong>Data Cleaning:</strong> The dataset was initially explored to identify and remove redundant or irrelevant columns. The 'CAISO Flag' column, which was dominated by the 'OTHER' category, was removed. Location-based columns like 'Facility Zip' and 'Facility City' were also dropped due to high cardinality.</li>
+                <li><strong>Target Variable Focus:</strong> The analysis focused on the 'Customer Sector' column, filtering it to retain only 'Residential' entries. A new categorical variable, 'Fuel_Type_v2', was created to simplify the classification into 'Nonsolar' and 'Solar' categories.</li>
+                <li><strong>Data Transformation:</strong> The 'Nameplate Capacity' was log-transformed to address skewness in the data, and the dataset was further filtered to remove any 'Other' categories in 'Fuel_Type_v2'.</li>
+                <li><strong>Model Training:</strong> Logistic regression with Lasso regularization was employed to classify the fuel types. The model was evaluated using a confusion matrix and classification metrics, achieving an accuracy of 84%.</li>
+                <li><strong>Visualization:</strong> The results are visualized through a confusion matrix and a line chart showing the median nameplate capacity by year, providing insights into the trends and model performance.</li>
+            </ul>
+        </div>
+        <div class="schema-container">
+            <h2>Data Cleaning Process</h2>
+            <div class="schema">
+                <div class="schema-step">Original Data</div>
+                <div class="arrow"></div>
+                <div class="schema-step">Removed 'CAISO Flag' (99.87% 'OTHER')</div>
+                <div class="arrow"></div>
+                <div class="schema-step">Dropped 'Facility Zip' & 'Facility City'</div>
+                <div class="arrow"></div>
+                <div class="schema-step">Filtered 'Customer Sector' to 'Residential'</div>
+                <div class="arrow"></div>
+                <div class="schema-step">Created 'Fuel_Type_v2' (Nonsolar/Solar)</div>
+                <div class="arrow"></div>
+                <div class="schema-step">Removed 'Other' from 'Fuel_Type_v2'</div>
+                <div class="arrow"></div>
+                <div class="schema-step">Final Cleaned Data</div>
+            </div>
+        </div>
+        <div class="chart-container">
+            <h2>Median Name Plate Capacity by Year</h2>
+            <canvas id="medianCapacityChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Confusion Matrix</h2>
+            <canvas id="confusionMatrix"></canvas>
+        </div>
+        <div class="metrics-table">
+            <h2>Classification Metrics</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-Score</th>
+                        <th>Support</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Nonsolar</td>
+                        <td>0.79</td>
+                        <td>0.92</td>
+                        <td>0.85</td>
+                        <td>5161</td>
+                    </tr>
+                    <tr>
+                        <td>Solar</td>
+                        <td>0.91</td>
+                        <td>0.76</td>
+                        <td>0.83</td>
+                        <td>5227</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Accuracy</td>
+                        <td>0.84</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Macro Avg</td>
+                        <td>0.85 / 0.84 / 0.84</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Weighted Avg</td>
+                        <td>0.85 / 0.84 / 0.84</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Data for the median capacity chart
+        const medianCapacityData = {
+            labels: ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+            datasets: [{
+                label: 'Median Capacity (KW AC)',
+                data: [1.609438, 2.451005, 1.956012, 1.916923, 1.527794, 1.735828, 1.551495, 1.609438, 1.609438, 1.609438, 1.791759, 1.791759, 1.609638, 1.609438, 1.700599],
+                borderColor: '#FF6384',
+                fill: false
+            }]
+        };
+
+        // Config for the median capacity chart
+        const medianCapacityConfig = {
+            type: 'line',
+            data: medianCapacityData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Median Name Plate Capacity by Year'
+                    }
+                }
+            }
+        };
+
+        // Render the median capacity chart
+        const medianCapacityChart = new Chart(
+            document.getElementById('medianCapacityChart'),
+            medianCapacityConfig
+        );
+
+        // Data for the confusion matrix
+        const confusionMatrixData = {
+            labels: ['Nonsolar', 'Solar'],
+            datasets: [{
+                label: 'True Nonsolar',
+                data: [4750, 411], // True positives and false negatives for Nonsolar
+                backgroundColor: '#FF6384'
+            }, {
+                label: 'True Solar',
+                data: [1257, 3970], // False positives and true positives for Solar
+                backgroundColor: '#36A2EB'
+            }]
+        };
+
+        // Config for the confusion matrix
+        const confusionMatrixConfig = {
+            type: 'bar',
+            data: confusionMatrixData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Confusion Matrix'
+                    }
+                }
+            }
+        };
+
+        // Render the confusion matrix
+        const confusionMatrix = new Chart(
+            document.getElementById('confusionMatrix'),
+            confusionMatrixConfig
+        );
+    </script>
+</body>
+</html>
