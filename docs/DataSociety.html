@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Storage Analysis</title>
+    <title>Data Society - Energy Consumption Analysis</title>
     <style>
+        /* Basic styling for the page */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -12,235 +11,320 @@
             background-color: #f4f4f9;
             color: #333;
         }
-        header {
+        header, footer {
             background-color: #0265B4;
             color: white;
-            padding: 10px 0;
+            padding: 20px;
             text-align: center;
         }
         .container {
             width: 80%;
             margin: 20px auto;
         }
-        .summary, .chart-container, .schema-container, .metrics-table {
+        .section {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
-        canvas {
+        img {
             max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
         }
-        .schema {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        h2 {
+            color: #0265B4;
+            cursor: pointer;
         }
-        .schema-step {
-            background-color: #e0e0e0;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            width: 80%;
-            text-align: center;
-        }
-        .arrow {
-            width: 0; 
-            height: 0; 
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 10px solid #333;
-            margin: 5px 0;
-        }
-        ul {
-            padding-left: 20px;
-        }
-        ul li {
-            margin-bottom: 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Energy Storage Analysis</h1>
+        <h1>Energy Consumption Analysis - Data Society</h1>
+        <p>Analysis of energy consumption patterns in the steel industry to predict power usage.</p>
     </header>
+
     <div class="container">
-        <div class="summary">
-            <h2>Project Overview</h2>
-            <p>This project involves analyzing energy storage data to classify fuel types in residential storages using logistic regression. The analysis process included several key steps:</p>
-            <ul>
-                <li><strong>Data Cleaning:</strong> The dataset was initially explored to identify and remove redundant or irrelevant columns. The 'CAISO Flag' column, which was dominated by the 'OTHER' category, was removed. Location-based columns like 'Facility Zip' and 'Facility City' were also dropped due to high cardinality.</li>
-                <li><strong>Target Variable Focus:</strong> The analysis focused on the 'Customer Sector' column, filtering it to retain only 'Residential' entries. A new categorical variable, 'Fuel_Type_v2', was created to simplify the classification into 'Nonsolar' and 'Solar' categories.</li>
-                <li><strong>Data Transformation:</strong> The 'Nameplate Capacity' was log-transformed to address skewness in the data, and the dataset was further filtered to remove any 'Other' categories in 'Fuel_Type_v2'.</li>
-                <li><strong>Model Training:</strong> Logistic regression with Lasso regularization was employed to classify the fuel types. The model was evaluated using a confusion matrix and classification metrics, achieving an accuracy of 84%.</li>
-                <li><strong>Visualization:</strong> The results are visualized through a confusion matrix and a line chart showing the median nameplate capacity by year, providing insights into the trends and model performance.</li>
-            </ul>
-        </div>
-        <div class="schema-container">
-            <h2>Data Cleaning Process</h2>
-            <div class="schema">
-                <div class="schema-step">Original Data</div>
-                <div class="arrow"></div>
-                <div class="schema-step">Removed 'CAISO Flag' (99.87% 'OTHER')</div>
-                <div class="arrow"></div>
-                <div class="schema-step">Dropped 'Facility Zip' & 'Facility City'</div>
-                <div class="arrow"></div>
-                <div class="schema-step">Filtered 'Customer Sector' to 'Residential'</div>
-                <div class="arrow"></div>
-                <div class="schema-step">Created 'Fuel_Type_v2' (Nonsolar/Solar)</div>
-                <div class="arrow"></div>
-                <div class="schema-step">Removed 'Other' from 'Fuel_Type_v2'</div>
-                <div class="arrow"></div>
-                <div class="schema-step">Final Cleaned Data</div>
+        <!-- Variable Definitions -->
+        <div class="section">
+            <h2>Variable Definitions</h2>
+            <div class="content">
+                <p><strong>Aim:</strong> Predict Real Power Consumption using a Linear Regression Model.</p>
+                <p><strong>Definition of Active Power:</strong> Usable or consumable energy in an AC Circuit (in the form of KW).</p>
+                <p>The <strong>Usage_kWh</strong> field contains the industry energy consumption in kWh, reflecting the real power consumption and is directly associated with the active current component.</p>
+                <p><strong>Assumption:</strong> Variables associated with date and time affect power consumption patterns. We assume that energy consumption will vary depending on the weekday or time of the day.</p>
             </div>
         </div>
-        <div class="chart-container">
-            <h2>Median Name Plate Capacity by Year</h2>
-            <canvas id="medianCapacityChart"></canvas>
+
+        <!-- Data Pre-Processing Illustration -->
+        <div class="section">
+            <h2>Data Pre-Processing Steps</h2>
+            <div class="content">
+                <ol>
+                    <li>Data Cleaning: Import data and print columns to understand the dataset.</li>
+                    <li>Column Renaming: Rename columns for better clarity.</li>
+                    <li>Outlier Detection: Identify and remove outliers using the IQR method.</li>
+                    <li>Feature Engineering: Create new features such as day, month, year, and time from the date.</li>
+                    <li>Handling Missing Values: Check and handle any missing values.</li>
+                    <li>Data Transformation: Apply log transformation to normalize skewed data.</li>
+                    <li>Encoding Categorical Variables: Convert categorical variables to numerical format.</li>
+                    <li>Splitting Data: Separate the dataset into training and testing sets.</li>
+                </ol>
+            </div>
         </div>
-        <div class="chart-container">
-            <h2>Confusion Matrix</h2>
-            <canvas id="confusionMatrix"></canvas>
+
+        <!-- High-Level Summary -->
+        <div class="section">
+            <h2>High-Level Summary</h2>
+            <div class="content">
+                <p>This analysis focuses on understanding the patterns of energy consumption in the steel industry. Key findings include the identification of outliers, correlation between CO2 emissions and power usage, and variations in consumption based on time and load type. The analysis also evaluates the impact of holidays and weekdays on energy usage. The final model evaluation compares Linear Regression, Lasso, and Ridge models to determine the most accurate prediction method.</p>
+            </div>
         </div>
-        <div class="metrics-table">
-            <h2>Classification Metrics</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Class</th>
-                        <th>Precision</th>
-                        <th>Recall</th>
-                        <th>F1-Score</th>
-                        <th>Support</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Nonsolar</td>
-                        <td>0.79</td>
-                        <td>0.92</td>
-                        <td>0.85</td>
-                        <td>5161</td>
-                    </tr>
-                    <tr>
-                        <td>Solar</td>
-                        <td>0.91</td>
-                        <td>0.76</td>
-                        <td>0.83</td>
-                        <td>5227</td>
-                    </tr>
-                    <tr>
-                        <td colspan="4">Accuracy</td>
-                        <td>0.84</td>
-                    </tr>
-                    <tr>
-                        <td colspan="4">Macro Avg</td>
-                        <td>0.85 / 0.84 / 0.84</td>
-                    </tr>
-                    <tr>
-                        <td colspan="4">Weighted Avg</td>
-                        <td>0.85 / 0.84 / 0.84</td>
-                    </tr>
-                </tbody>
-            </table>
+
+        <!-- Section: Outlier Detection -->
+        <div class="section">
+            <h2>Outlier Detection (Plot 1)</h2>
+            <div class="content">
+                <img src="C:/Users/U355394/Desktop/images/newplot1" alt="Outlier Detection">
+            </div>
         </div>
+
+        <!-- Section: Correlation Analysis -->
+        <div class="section">
+            <h2>Correlation Analysis (Plot 2)</h2>
+            <div class="content">
+                <img src="C:/Users/U355394/Desktop/images/newplot2" alt="Correlation Analysis">
+            </div>
+        </div>
+
+        <!-- Section: Power Consumption by Day -->
+        <div class="section">
+            <h2>Average Power Consumption by Day (Plot 3)</h2>
+            <div class="content">
+                <img src="C:/Users/U355394/Desktop/images/newplot3.png" alt="Average Power Consumption by Day">
+            </div>
+        </div>
+
+        <!-- Section: Power Consumption by Week Status -->
+        <div class="section">
+            <h2>Average Power Consumption by Week Status (Plot 4)</h2>
+            <div class="content">
+                <img src="C:/Users/U355394/Desktop/images/newplot4" alt="Average Power Consumption by Week Status">
+            </div>
+        </div>
+
+        <!-- Section: Load Type Distribution -->
+        <div class="section">
+            <h2>Load Type Distribution (Plot 5)</h2>
+            <div class="content">
+                <img src="C:/Users/U355394/Desktop/images/newplot5" alt="Load Type Distribution">
+            </div>
+        </div>
+
+        <!-- Section: Monthly Power Consumption -->
+        <div class="section">
+            <h2>Monthly Power Consumption (Plot 6)</h2>
+            <div class="content">
+                <img src="C:/Users/U355394/Desktop/images/newplot6" alt="Monthly Power Consumption">
+            </div>
+        </div>
+
+        <!-- Section: Holiday vs Non-Holiday Consumption -->
+        <div class="section">
+            <h2>Holiday vs Non-Holiday Consumption (Plot 7)</h2>
+            <div class="content">
+                <img src="C:/Users/U355394/Desktop/images/newplot7" alt="Holiday vs Non-Holiday Consumption">
+            </div>
+        </div>
+
+        <!-- Add additional sections as needed -->
+        <div class="section">
+            <h2>Plot 8</h2>
+            <div class="content">
+                <p>Description for plot 8.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot8" alt="Plot 8">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 9</h2>
+            <div class="content">
+                <p>Description for plot 9.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot9" alt="Plot 9">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 10</h2>
+            <div class="content">
+                <p>Description for plot 10.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot10" alt="Plot 10">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 11</h2>
+            <div class="content">
+                <p>Description for plot 11.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot11" alt="Plot 11">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 12</h2>
+            <div class="content">
+                <p>Description for plot 12.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot12.png" alt="Plot 12">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 13</h2>
+            <div class="content">
+                <p>Description for plot 13.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot13.png" alt="Plot 13">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 14</h2>
+            <div class="content">
+                <p>Description for plot 14.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot14.png" alt="Plot 14">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 15</h2>
+            <div class="content">
+                <p>Description for plot 15.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot15.png" alt="Plot 15">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 16</h2>
+            <div class="content">
+                <p>Description for plot 16.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot16.png" alt="Plot 16">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 17</h2>
+            <div class="content">
+                <p>Description for plot 17.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot17.png" alt="Plot 17">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 18</h2>
+            <div class="content">
+                <p>Description for plot 18.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot18.png" alt="Plot 18">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 19</h2>
+            <div class="content">
+                <p>Description for plot 19.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot19.png" alt="Plot 19">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 20</h2>
+            <div class="content">
+                <p>Description for plot 20.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot20.png" alt="Plot 20">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 21</h2>
+            <div class="content">
+                <p>Description for plot 21.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot21.png" alt="Plot 21">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 22</h2>
+            <div class="content">
+                <p>Description for plot 22.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot22.png" alt="Plot 22">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 23</h2>
+            <div class="content">
+                <p>Description for plot 23.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot23.png" alt="Plot 23">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 24</h2>
+            <div class="content">
+                <p>Description for plot 24.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot24.png" alt="Plot 24">
+            </div>
+        </div>
+        <div class="section">
+            <h2>Plot 25</h2>
+            <div class="content">
+                <p>Description for plot 25.</p>
+                <img src="C:/Users/U355394/Desktop/images/newplot25.png" alt="Plot 25">
+            </div>
+        </div>
+ <!-- Section: Linear Regression Model -->
+ <div class="section">
+    <h2>Linear Regression Model (Plot 26)</h2>
+    <div class="content">
+        <p>The Linear Regression model achieved a high accuracy with a score of 0.976. The Mean Absolute Error (MAE) was 6.89, and the Root Mean Squared Error (RMSE) was 6.92, indicating a strong predictive capability. This model is straightforward and interpretable, making it suitable for stakeholders who need clear insights into energy consumption patterns.</p>
+        <img src="C:/Users/U355394/Desktop/images/newplot26.png" alt="Linear Regression Model">
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</div>
+
+<!-- Section: Ridge Model -->
+<div class="section">
+    <h2>Ridge Model (Plot 27)</h2>
+    <div class="content">
+        <p>The Ridge model also performed well with a score of 0.976. It had a slightly lower MAE of 6.89 and RMSE of 6.92, similar to the Linear Regression model. Ridge regression is beneficial when dealing with multicollinearity, as it adds a penalty to the coefficients, reducing their variance. This makes it a robust choice for predicting energy consumption in complex systems.</p>
+        <img src="C:/Users/U355394/Desktop/images/newplot27.png" alt="Ridge Model">
+    </div>
+</div>
+
+<!-- Section: Lasso Model -->
+<div class="section">
+    <h2>Lasso Model (Plot 28)</h2>
+    <div class="content">
+        <p>The Lasso model had a lower score of 0.804, with an MAE of 2.56 and RMSE of 2.69. While it is less accurate than the other models, Lasso is advantageous for feature selection due to its ability to shrink some coefficients to zero, effectively selecting a simpler model. This can be useful for identifying the most critical factors affecting energy consumption.</p>
+        <img src="C:/Users/U355394/Desktop/images/newplot28.png" alt="Lasso Model">
+    </div>
+    <!-- Executive Summary -->
+<div class="section">
+    <h2>Executive Summary</h2>
+    <div class="content">
+        <p>In evaluating the cost implications of using each model, it's important to consider both the accuracy and the interpretability of the models:</p>
+        <ul>
+            <li><strong>Linear Regression:</strong> This model is cost-effective due to its simplicity and ease of implementation. It provides clear insights, making it suitable for quick decision-making. However, it may not handle complex relationships as effectively as other models.</li>
+            <li><strong>Ridge Regression:</strong> While slightly more complex, Ridge regression offers robustness against multicollinearity, which can be crucial in systems with interrelated variables. The cost of implementation is slightly higher, but it provides a balance between accuracy and complexity.</li>
+            <li><strong>Lasso Regression:</strong> Lasso is beneficial for feature selection, potentially reducing costs by identifying the most impactful variables. However, its lower accuracy compared to the other models might lead to less precise predictions, which could affect decision-making.</li>
+        </ul>
+        <p>Overall, the choice of model should align with the specific needs of the organization, balancing the trade-offs between cost, accuracy, and interpretability.</p>
+    </div>
+</div>
+</div>
+    </div>
+
+    <footer>
+        <p>© 2024 Data Society</p>
+    </footer>
+
     <script>
-        // Data for the median capacity chart
-        const medianCapacityData = {
-            labels: ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'],
-            datasets: [{
-                label: 'Median Capacity (KW AC)',
-                data: [1.609438, 2.451005, 1.956012, 1.916923, 1.527794, 1.735828, 1.551495, 1.609438, 1.609438, 1.609438, 1.791759, 1.791759, 1.609638, 1.609438, 1.700599],
-                borderColor: '#FF6384',
-                fill: false
-            }]
-        };
-
-        // Config for the median capacity chart
-        const medianCapacityConfig = {
-            type: 'line',
-            data: medianCapacityData,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Median Name Plate Capacity by Year'
-                    }
-                }
-            }
-        };
-
-        // Render the median capacity chart
-        const medianCapacityChart = new Chart(
-            document.getElementById('medianCapacityChart'),
-            medianCapacityConfig
-        );
-
-        // Data for the confusion matrix
-        const confusionMatrixData = {
-            labels: ['Nonsolar', 'Solar'],
-            datasets: [{
-                label: 'True Nonsolar',
-                data: [4750, 411], // True positives and false negatives for Nonsolar
-                backgroundColor: '#FF6384'
-            }, {
-                label: 'True Solar',
-                data: [1257, 3970], // False positives and true positives for Solar
-                backgroundColor: '#36A2EB'
-            }]
-        };
-
-        // Config for the confusion matrix
-        const confusionMatrixConfig = {
-            type: 'bar',
-            data: confusionMatrixData,
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        stacked: true
-                    },
-                    y: {
-                        stacked: true
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Confusion Matrix'
-                    }
-                }
-            }
-        };
-
-        // Render the confusion matrix
-        const confusionMatrix = new Chart(
-            document.getElementById('confusionMatrix'),
-            confusionMatrixConfig
-        );
+        // JavaScript to make sections collapsible
+        document.addEventListener('DOMContentLoaded', function () {
+            const sections = document.querySelectorAll('.section h2');
+            sections.forEach((header) => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    content.classList.toggle('hidden');
+                });
+            });
+        });
     </script>
-</body>
-</html>
+
+</body></html>
